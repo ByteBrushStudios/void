@@ -2,13 +2,16 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
-	"runtime/debug"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 	"time"
+	"void/extras"
 	"void/state"
 	"void/types"
 
@@ -16,7 +19,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/infinitybotlist/eureka/zapchi"
-	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
 )
@@ -30,10 +32,6 @@ var (
 	assets embed.FS
 
 	appTemplate *template.Template
-
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
-
-	voidInfo types.VoidInfo
 )
 
 // Load the services.yaml file into the state here because we use go:embed
@@ -60,26 +58,8 @@ func init() {
 
 	state.Logger.Info("Got services:", state.Services)
 
-	voidInfo = types.VoidInfo{
-		Version: "2.0.0-alpha.1",
-	}
-
-	var commit string
-
-	// Use runtime/debug vcs.revision to get the git commit hash
-	if info, ok := debug.ReadBuildInfo(); ok {
-		for _, setting := range info.Settings {
-			if setting.Key == "vcs.revision" {
-				commit = setting.Value
-			}
-		}
-	}
-
-	if commit == "" {
-		commit = "unknown"
-	}
-
-	voidInfo.Commit = commit
+	// Set version if built with -ldflags
+	extras.SetVersion("2.0.0-alpha.1")
 }
 
 func dataHandlerMiddleware(next http.Handler) http.Handler {
@@ -132,7 +112,7 @@ func dataHandlerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func main() {
+func setupRoutes() {
 	r := chi.NewRouter()
 
 	// A good base middleware stack
@@ -155,6 +135,13 @@ func main() {
 		http.StripPrefix("/__voidStatic", http.FileServer(http.FS(subbedAssets))).ServeHTTP(w, r)
 	})
 
+	// Health check endpoints (use handler from health.go)
+	r.HandleFunc("/health", extras.HealthHandler)
+	r.HandleFunc("/healthz", extras.HealthHandler)
+
+	// Update check endpoint
+	r.HandleFunc("/update-check", extras.UpdateCheckHandler)
+
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		// Get the hostname from the request
 		hostname := r.Host
@@ -174,18 +161,23 @@ func main() {
 		// Find the right service from config
 		var service = types.Service{
 			Name:    "Unknown Service",
-			Domain:  "infinitybots.gg",
-			Support: "https://discord.gg/ae6wpKqApt",
-			Status:  "https://status.botlist.site/",
+			Domain:  "bytebrush.dev",
+			Support: "https://discord.gg/Vv2bdC44Ge",
+			Status:  "https://status.bytebrush.dev",
 		}
+		var matched bool
+		var backendURL string
 
 		for _, s := range state.Services.Services {
 			if s.Domain == rootDomain {
 				service = s
+				matched = true
+				backendURL = s.Host // Use the host field as backend URL
 				break
 			}
 		}
 
+		// If this is an API URL, serve the maintenance JSON as before
 		if slices.Contains(state.Services.APIUrls, hostname) {
 			w.WriteHeader(http.StatusRequestTimeout)
 			w.Header().Set("Content-Type", "application/json")
@@ -193,18 +185,44 @@ func main() {
 			apiCtx := types.APICtx{
 				Message: "This service is down for maintenance...",
 				Service: service,
-				Info:    voidInfo,
+				Info:    extras.GetVoidInfo(),
 			}
 
 			json.NewEncoder(w).Encode(apiCtx)
 			return
 		}
 
+		// If a matching service is found, reverse proxy to its backend
+		if matched && backendURL != "" {
+			target, err := url.Parse(backendURL)
+			if err != nil {
+				state.Logger.Error("Invalid backend URL for service:", service.Name, backendURL, err)
+				http.Error(w, "Bad Gateway: invalid backend URL", http.StatusBadGateway)
+				return
+			}
+
+			proxy := httputil.NewSingleHostReverseProxy(target)
+			// Optionally, log proxy errors and return a meaningful error to the client
+			originalDirector := proxy.Director
+			proxy.Director = func(req *http.Request) {
+				originalDirector(req)
+				// Preserve original host header for backend
+				req.Host = target.Host
+			}
+			proxy.ErrorHandler = func(rw http.ResponseWriter, req *http.Request, err error) {
+				state.Logger.Error("Proxy error for service:", service.Name, err)
+				http.Error(rw, "Service Unavailable (backend unreachable)", http.StatusServiceUnavailable)
+			}
+			proxy.ServeHTTP(w, r)
+			return
+		}
+
+		// Fallback: serve the info/status page as before
 		htmlCtx := types.HTMLCtx{
 			MatchedService: service,
 			Path:           r.URL.Path,
 			Hostname:       hostname,
-			Info:           voidInfo,
+			Info:           extras.GetVoidInfo(),
 			Redirect:       r.URL.Query().Get("src"),
 		}
 
@@ -226,4 +244,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func main() {
+	setupRoutes()
 }

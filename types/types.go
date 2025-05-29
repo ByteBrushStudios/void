@@ -4,6 +4,8 @@ package types
 type Service struct {
 	// Name is the name of the service
 	Name string `yaml:"name" validate:"required"`
+	// Host is the backend URL of the service
+	Host string `yaml:"host" validate:"required,url"`
 	// Domain is the domain of the service
 	Domain string `yaml:"domain" validate:"required,hostname"`
 	// Support is the support server/location of the service
@@ -18,22 +20,16 @@ type Document struct {
 	APIUrls  []string  `yaml:"apiUrls"`
 }
 
-// Some information about the maintenance server
-type VoidInfo struct {
-	Version string
-	Commit  string
-}
-
 type HTMLCtx struct {
 	MatchedService Service
 	Path           string
 	Hostname       string
-	Info           VoidInfo
+	Info           interface{} // Use interface{} to allow extras.VoidInfo
 	Redirect       string
 }
 
 type APICtx struct {
-	Message string   `json:"message"`
-	Service Service  `json:"service"`
-	Info    VoidInfo `json:"info"`
+	Message string      `json:"message"`
+	Service Service     `json:"service"`
+	Info    interface{} `json:"info"`
 }

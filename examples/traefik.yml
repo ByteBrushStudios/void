@@ -1,0 +1,105 @@
+# Traefik configuration for Void Maintenance Server
+# This example shows how to use Void as a fallback service with Traefik
+
+# Static configuration (traefik.yml)
+api:
+  dashboard: true
+  insecure: true
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@example.com
+      storage: /acme.json
+      httpChallenge:
+        entryPoint: web
+
+---
+# Dynamic configuration (dynamic.yml)
+http:
+  routers:
+    # Main application router
+    app-router:
+      rule: "Host(`example.com`)"
+      service: app-service
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - app-fallback
+
+    # API router
+    api-router:
+      rule: "Host(`api.example.com`)"
+      service: api-service
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - api-fallback
+
+    # Void maintenance router (fallback)
+    void-router:
+      rule: "Host(`example.com`) || Host(`api.example.com`)"
+      service: void-service
+      priority: 1
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    # Your main application
+    app-service:
+      loadBalancer:
+        servers:
+          - url: "http://app:3000"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+          timeout: "10s"
+
+    # Your API service
+    api-service:
+      loadBalancer:
+        servers:
+          - url: "http://api:8080"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+          timeout: "10s"
+
+    # Void maintenance service
+    void-service:
+      loadBalancer:
+        servers:
+          - url: "http://void:1292"
+
+  middlewares:
+    # Fallback middleware for main app
+    app-fallback:
+      circuitBreaker:
+        expression: "NetworkErrorRatio() > 0.3"
+        fallbackDuration: "30s"
+        recoveryDuration: "10s"
+
+    # Fallback middleware for API
+    api-fallback:
+      circuitBreaker:
+        expression: "NetworkErrorRatio() > 0.3 || ResponseCodeRatio(500, 600, 0, 600) > 0.3"
+        fallbackDuration: "30s"
+        recoveryDuration: "10s"

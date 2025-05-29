@@ -1,0 +1,46 @@
+# Void Maintenance Server - Service Configuration
+# This file defines the services that Void will reverse proxy to and provide maintenance pages for
+
+services:
+  # Main web application
+  - name: "My Web Application [Production]"
+    host: "http://127.0.0.1:3000"  # Backend server URL
+    domain: "example.com"          # Domain to match (supports root domains)
+    support: "https://discord.gg/support"  # Support/contact URL
+    status: "https://status.example.com"   # Status page URL
+
+  # API server
+  - name: "API Server [Production]"
+    host: "http://127.0.0.1:8080"
+    domain: "api.example.com"
+    support: "https://support.example.com"
+    status: "https://status.example.com"
+
+  # Microservice example
+  - name: "User Service [Production]"
+    host: "http://user-service:3001"  # Can use Docker service names
+    domain: "users.example.com"
+    support: "https://discord.gg/support"
+    status: "https://status.example.com"
+
+  # Load balanced service
+  - name: "Load Balanced App [Production]"
+    host: "http://load-balancer:8080"
+    domain: "app.example.com"
+    support: "https://support.example.com"
+    status: "https://status.example.com"
+
+# API URLs - these domains will receive JSON responses instead of HTML maintenance pages
+# Perfect for API endpoints, webhooks, or any programmatic access
+apiUrls:
+  - "api.example.com"
+  - "webhooks.example.com"
+  - "cdn.example.com"
+  - "api-v2.example.com"
+
+# Configuration Notes:
+# 1. The 'host' field should point to your backend service
+# 2. The 'domain' field is matched against the request's Host header
+# 3. Root domains (example.com) will match all subdomains
+# 4. Services in 'apiUrls' return JSON instead of HTML maintenance pages
+# 5. Void will reverse proxy to healthy backends and show maintenance pages when they're down

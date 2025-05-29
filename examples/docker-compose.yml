@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  void:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: void-maintenance
+    restart: unless-stopped
+    ports:
+      - "1292:1292"
+    environment:
+      - VOID_PORT=1292
+      - VOID_LOG_LEVEL=info
+    volumes:
+      - ./services.yaml:/app/services.yaml:ro
+      - ./logs:/app/logs
+    networks:
+      - void-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1292/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Example backend service
+  app:
+    image: nginx:alpine
+    container_name: example-app
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - void-network
+
+  # Example API service
+  api:
+    image: nginx:alpine
+    container_name: example-api
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - void-network
+
+networks:
+  void-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

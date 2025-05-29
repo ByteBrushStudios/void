@@ -1,147 +1,428 @@
-# Void
-`Void` is an open-source maintenance system developed by `Infinity Development`. It is designed to provide a seamless and efficient way to manage and communicate the status of various services during maintenance periods or outages. Built with scalability and performance in mind, `Void` leverages the power of Go to ensure quick response times and reliable operation.
+# Void ⚡
 
-## Features
-- **Scalability**: Designed to handle a large number of services efficiently.
-- **Maintainability**: Clean and modular codebase for easier updates and maintenance.
-- **Speed**: Improved performance with Go's concurrency model.
+`Void` is a modern, high-performance reverse proxy and maintenance system developed by `ByteBrush Studios`. It provides intelligent traffic routing with beautiful, techy maintenance pages when services are unavailable. Built with Go for exceptional performance and featuring a stunning glassmorphic UI with animated backgrounds.
+
+## ✨ Features
+
+- **🔄 Intelligent Reverse Proxy**: Automatically routes traffic to healthy backends and shows maintenance pages when services are down
+- **🎨 Modern UI**: Beautiful glassmorphic design with animated backgrounds and smooth transitions
+- **⚡ High Performance**: Built with Go's concurrency model for lightning-fast response times
+- **📱 Responsive Design**: Works flawlessly on desktop, tablet, and mobile devices
+- **🛠️ Debug Information**: Built-in debugging tools with client and server information
+- **🌐 Multi-Service Support**: Manage multiple services with individual configurations
+- **📊 Smart API Handling**: JSON responses for API endpoints during maintenance
+- **🔧 Easy Configuration**: Simple YAML-based service configuration
+- **🐳 Container Ready**: Docker and Kubernetes compatible
+- **🚀 Multiple Deployment Options**: Works with Nginx, Traefik, Dokploy, and more
 
 ---
 
-## Preview
-Here are some preview images of the `Void` maintenance system:
+## 🖼️ Preview
 
-![Preview 1](assets/previews/debug_closed.png)
-![Preview 2](assets/previews/debug_open.png)
+Experience the modern, techy interface of Void:
+
+![Debug Panel Closed](assets/previews/debug_closed.png)
+*Clean, modern maintenance page with glassmorphic design*
+
+![Debug Panel Open](assets/previews/debug_open.png)  
+*Comprehensive debug information with syntax highlighting*
 
 ---
 
-## Setting Up Void with Nginx
-To set up `Void` as a maintenance system under the `_maint` location in Nginx, follow these steps:
+## 🚀 Quick Start
 
-1. **Install Nginx**: Ensure that Nginx is installed on your server. You can install it using your package manager. For example, on Ubuntu:
-   ```sh
-   sudo apt update
-   sudo apt install nginx
+### Prerequisites
+- Go 1.18 or higher (for building from source)
+- OR Docker (for containerized deployment)
+
+### Option 1: Binary Installation
+
+1. **Download and Build**
+   ```bash
+   git clone https://github.com/InfinityBotList/void.git
+   cd void
+   make build
    ```
 
-2. **Configure Nginx**: Edit your Nginx configuration file (usually located at `/etc/nginx/nginx.conf` or `/etc/nginx/sites-available/default`) to include void, you can find a template config [here](./temp/nginx.conf)
+2. **Configure Services**
+   ```bash
+   cp examples/services.yaml.example services.yaml
+   # Edit services.yaml with your configuration
+   ```
 
-> **NOTE**: the default port for void is `1292` but this can be changed [here](./main.go#L224)
+3. **Run Void**
+   ```bash
+   ./void
+   ```
+
+### Option 2: Docker Deployment
+
+1. **Using Docker Compose**
+   ```bash
+   git clone https://github.com/InfinityBotList/void.git
+   cd void
+   cp examples/services.yaml.example services.yaml
+   docker-compose -f examples/docker-compose.yml up -d
+   ```
+
+Void will start on port `1292` by default and begin reverse proxying to your configured services.
 
 ---
 
-## Setting up Void with systemd
-To set up `Void` to run as a systemd service, follow these steps:
+## ⚙️ Configuration
 
-1. **Create a systemd Service File**: Create a new service file for `Void` at `/etc/systemd/system/void.service`, we have a template service pre-ready for you [here](./temp//void.service)
+### Service Configuration
 
-> Replace `/your/path/to/void` with the actual path to your Void executable and adjust the User and Group and Start `After` service/target as needed.
+Void uses a simple YAML configuration file (`services.yaml`) to define your services:
 
-
-2. **Reload systemd**: Reload the systemd manager configuration to apply the new service file:
-   ```sh
-   sudo systemctl daemon-reload
-   ```
-
-3. **Enabled and Start the Service**: Enable the service to start on boot and start it immediately:
-   ```sh
-   sudo systemctl enable void.service
-   sudo systemctl start void.service
-   ```
-
-4. **Check the Service Status**: Verify that the service is running correctly:
-   ```sh
-   sudo systemctl status void.service
-   ```
-
-With this setup, Void will run as a systemd service, starting automatically at boot and restarting on failure.
-
----
-
-## Starting the Void Server
-To run the project locally, follow these steps:
-
-> **NOTE**: void requires Go v1.18 or higher.
-
-1. **Install Dependencies and Build Void**
-  ```sh
-  make
-  ```
-
-2. **Run the Void Server**
-  ```sh
-  ./void
-  ```
-
----
-
-## Configuring Services
-> **NOTE**: you should also change the fallback services [here](./main.go#L175)
-
-```yml
+```yaml
 services:
-  - name: "Some Website"
-    domain: "example.com"
-    support: "https://discord.gg/23h82fh48f"
-    status: "https://status.example.com"
+  - name: "My Web Application [Production]"
+    host: "http://127.0.0.1:3000"    # Backend server URL
+    domain: "myapp.com"              # Domain to match requests
+    support: "https://discord.gg/support"
+    status: "https://status.myapp.com"
+  
+  - name: "API Server [Production]"
+    host: "http://127.0.0.1:8080"
+    domain: "api.myapp.com"
+    support: "https://support.myapp.com"
+    status: "https://status.myapp.com"
 
+# API endpoints return JSON instead of HTML
 apiUrls:
-  - "api.example.com"
+  - "api.myapp.com"
+  - "webhooks.myapp.com"
+```
+
+#### How It Works
+
+1. **Healthy Service**: Void reverse proxies requests to the backend defined in `host`
+2. **Unhealthy Service**: Void displays the beautiful maintenance page
+3. **API Endpoints**: Services listed in `apiUrls` receive JSON responses during maintenance
+
+#### Configuration Fields
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `name` | Display name for the service | `"My App [Production]"` |
+| `host` | Backend server URL for reverse proxy | `"http://127.0.0.1:3000"` |
+| `domain` | Domain to match requests against | `"myapp.com"` |
+| `support` | Support/contact URL | `"https://discord.gg/support"` |
+| `status` | Status page URL | `"https://status.myapp.com"` |
+
+---
+
+## 🌐 Deployment Options
+
+### Nginx Integration
+
+Perfect for traditional server setups. Void acts as a fallback when your main services are down.
+
+```bash
+# Copy the example configuration
+cp examples/nginx.conf /etc/nginx/sites-available/your-site
+# Edit and enable the configuration
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+See `examples/nginx.conf` for a complete production-ready configuration.
+
+### Traefik Integration
+
+Ideal for containerized environments with automatic service discovery.
+
+```bash
+# Copy Traefik configuration
+cp examples/traefik.yml /etc/traefik/
+# Void integrates seamlessly with Traefik's circuit breaker middleware
+```
+
+### Dokploy Deployment
+
+Modern deployment platform with built-in container orchestration.
+
+```bash
+# Import the Dokploy configuration
+dokploy import examples/dokploy.json
+# Deploy with zero-downtime rolling updates
+```
+
+### Systemd Service
+
+For production server deployments:
+
+```bash
+# Copy service file
+sudo cp examples/void.service /etc/systemd/system/
+# Enable and start
+sudo systemctl daemon-reload
+sudo systemctl enable void.service
+sudo systemctl start void.service
 ```
 
 ---
 
-## Debug Information
-The web interface provides a "Debug Info" button that expands to show detailed information about the service and user. This includes:
+## 🔧 Environment Variables
 
-- Void Info: Version, commit, and route information.
-- User Info: IP address, location, browser, and browser version.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VOID_PORT` | Server port | `1292` |
+| `VOID_LOG_LEVEL` | Log level (debug, info, warn, error) | `info` |
 
 ---
 
-## Contributing
+## 📊 Architecture
 
-We welcome contributions from the community to help improve `Void`. If you would like to contribute, please follow these steps:
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Load Balancer │────│      Void       │────│  Backend Apps   │
+│  (Nginx/Traefik)│    │ Reverse Proxy   │    │ (Your Services) │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                              │
+                              ▼
+                      ┌─────────────────┐
+                      │ Maintenance UI  │
+                      │ (When backend   │
+                      │  is unhealthy)  │
+                      └─────────────────┘
+```
 
-1. **Fork the Repository**: Click the "Fork" button at the top right of this repository to create a copy of the repository on your GitHub account.
+### Request Flow
 
-2. **Clone the Repository**: Clone the forked repository to your local machine using the following command:
-   ```sh
+1. **Incoming Request** → Load balancer routes to Void
+2. **Domain Matching** → Void matches request domain to configured service
+3. **Health Check** → Void attempts to proxy to backend service
+4. **Success** → Request proxied to healthy backend
+5. **Failure** → Beautiful maintenance page served (HTML) or JSON response (APIs)
+
+---
+
+## 🔍 Features Deep Dive
+
+### Intelligent Reverse Proxy
+- **Automatic Failover**: Seamlessly switches between backend and maintenance mode
+- **Domain-Based Routing**: Route different domains to different backend services
+- **Health Detection**: Automatically detects when services are available again
+- **Header Preservation**: Maintains original request headers for proper backend handling
+
+### Smart API Handling
+```yaml
+apiUrls:
+  - "api.example.com"
+  - "webhooks.example.com"
+```
+API endpoints receive structured JSON responses instead of HTML:
+```json
+{
+  "message": "This service is down for maintenance...",
+  "service": {
+    "name": "API Server [Production]",
+    "domain": "api.example.com",
+    "support": "https://support.example.com",
+    "status": "https://status.example.com"
+  },
+  "info": {
+    "version": "2.0.0-alpha.1",
+    "commit": "abc123"
+  }
+}
+```
+
+### Debug Information
+The debug panel provides comprehensive diagnostics:
+- **Server Info**: Void version, commit hash, routing details
+- **Client Info**: IP address, geolocation, browser details with privacy controls
+- **Request Details**: Path, hostname, and routing information
+
+### Modern UI Features
+- **Animated Background**: Subtle particle animations and grid patterns
+- **Glassmorphic Design**: Modern blur effects and transparency
+- **Smooth Transitions**: Buttery smooth animations and micro-interactions
+- **Responsive Layout**: Perfect on all screen sizes and devices
+- **Dark Theme**: Modern color palette optimized for readability
+
+---
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+void/
+├── main.go                    # Main application entry point
+├── services.yaml             # Service configuration
+├── app.html                  # Modern maintenance page template
+├── assets/                   # Static assets (images, icons)
+│   └── previews/            # UI preview images
+├── state/                   # Application state management
+├── types/                   # Type definitions and structs
+├── examples/                # Configuration examples
+│   ├── nginx.conf          # Nginx integration example
+│   ├── traefik.yml         # Traefik configuration
+│   ├── dokploy.json        # Dokploy deployment config
+│   ├── void.service        # Systemd service template
+│   ├── docker-compose.yml  # Docker Compose setup
+│   └── services.yaml.example # Service configuration example
+├── temp/                   # Temporary files and drafts
+└── README.md               # This documentation
+```
+
+### Building from Source
+
+```bash
+# Install dependencies and build
+make build
+
+# Run in development mode with hot reload
+make dev
+
+# Run tests
+make test
+
+# Build for production with optimizations
+make release
+```
+
+### API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/*` | Main router - handles all requests with domain matching |
+| `/__voidStatic/*` | Static assets (CSS, JS, images) |
+
+---
+
+## 🔧 Advanced Configuration
+
+### Load Balancing Integration
+
+Void works excellently behind load balancers:
+
+**HAProxy Example:**
+```haproxy
+backend void_maintenance
+    server void1 127.0.0.1:1292 check
+
+backend app_servers
+    option httpchk GET /health
+    server app1 127.0.0.1:3000 check fall 3 rise 2
+    server app2 127.0.0.1:3001 check fall 3 rise 2
+
+frontend web_frontend
+    default_backend app_servers
+    # Fallback to maintenance on 5xx errors
+    errorfile 503 /dev/null
+    errorloc 503 http://void-maintenance:1292
+```
+
+### Container Orchestration
+
+**Kubernetes Example:**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: void-maintenance
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: void
+  template:
+    metadata:
+      labels:
+        app: void
+    spec:
+      containers:
+      - name: void
+        image: void:latest
+        ports:
+        - containerPort: 1292
+        env:
+        - name: VOID_PORT
+          value: "1292"
+        - name: VOID_LOG_LEVEL
+          value: "info"
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. **Fork & Clone**
+   ```bash
    git clone https://github.com/your-username/void.git
+   cd void
    ```
 
-3. **Create a Branch**: Create a new branch for your feature or bug fix:
-   ```sh
-   git checkout -b feature-or-bugfix-name
+2. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/amazing-feature
    ```
 
-4. **Make Changes**: Make your changes to the codebase.
-
-5. **Commit Changes**: Commit your changes with a descriptive commit message:
-   ```sh
-   git commit -m "Description of the feature or bug fix"
+3. **Make Changes & Test**
+   ```bash
+   make test
+   make dev  # Test your changes
    ```
 
-6. **Push Changes**: Push your changes to your forked repository:
-   ```sh
-   git push origin feature-or-bugfix-name
+4. **Commit & Push**
+   ```bash
+   git commit -m "feat: add amazing feature"
+   git push origin feature/amazing-feature
    ```
 
-7. **Create a Pull Request**: Open a pull request from your forked repository to the main repository. Provide a clear description of your changes and any relevant information.
+5. **Open Pull Request**
 
-8. **Review Process**: Your pull request will be reviewed by the maintainers. Please be responsive to any feedback or requests for changes.
-
-Thank you for contributing to Void! Your efforts help make this project better for everyone.
+### Development Guidelines
+- Follow Go best practices and `gofmt` formatting
+- Add tests for new features
+- Update documentation for any API changes
+- Ensure backwards compatibility
+- Test with multiple deployment scenarios
 
 ---
 
-## License
-This project is open source and available under the MIT License.
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+### Open Source Credits
+- [Go](https://golang.org/) - The Go Programming Language
+- [Chi Router](https://github.com/go-chi/chi) - Lightweight HTTP router
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Iconify](https://iconify.design/) - Unified icon framework
+- [ipapi.co](https://ipapi.co/) - IP geolocation API
 
 ---
 
-## Acknowledgements
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Iconify](https://iconify.design/)
-- [ipapi](https://ipapi.co/)
+## 🆘 Support & Community
+
+- **📚 Documentation**: This README and inline code comments
+- **🐛 Issues**: [GitHub Issues](https://github.com/InfinityBotList/void/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/InfinityBotList/void/discussions)
+- **💬 Discord**: Join our [community](https://discord.gg/ae6wpKqApt)
+- **📧 Email**: Contact ByteBrush Studios
+
+---
+
+## 🏢 About ByteBrush Studios
+
+Void is developed and maintained by [ByteBrush Studios](https://infinitydevs.ca/), creators of high-quality open-source software for developers and businesses.
+
+**Other Projects:**
+- [Infinity Bot List](https://infinitybots.gg/) - The next generation Discord bot list
+- [Eureka](https://github.com/infinitybotlist/eureka) - Powerful logging and utilities library
+
+---
+
+<div align="center">
+
+**[⭐ Star this repo](https://github.com/InfinityBotList/void) • [🐛 Report Bug](https://github.com/InfinityBotList/void/issues) • [💡 Request Feature](https://github.com/InfinityBotList/void/discussions)**
+
+Made with ❤️ by ByteBrush Studios
+
+</div>
