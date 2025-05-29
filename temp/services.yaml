@@ -1,0 +1,9 @@
+services:
+  - name: "Example Service"
+    host: "http://127.0.0.1:4222"
+    domain: "example.com"
+    support: "https://discord.gg/SOME_INVITE_CODE"
+    status: "https://status.example.com"
+
+apiUrls:
+  - "api.example.com"

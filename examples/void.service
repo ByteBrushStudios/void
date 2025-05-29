@@ -1,0 +1,58 @@
+[Unit]
+Description=Void Maintenance Server - Modern reverse proxy with beautiful maintenance pages
+Documentation=https://github.com/ByteBrushStudios/void
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=void
+Group=void
+WorkingDirectory=/opt/void
+ExecStart=/opt/void/void
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=30
+Restart=always
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Environment
+Environment=VOID_PORT=1292
+Environment=VOID_LOG_LEVEL=info
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# File system permissions
+ReadWritePaths=/opt/void
+ReadOnlyPaths=/opt/void/services
+
+# Network security
+IPAddressDeny=any
+IPAddressAllow=localhost
+IPAddressAllow=127.0.0.1/8
+IPAddressAllow=::1/128
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target

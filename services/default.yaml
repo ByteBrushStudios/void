@@ -1,0 +1,5 @@
+# Default service configuration used when no matching service is found
+name: "Unknown Service"
+domain: "infinitybots.gg"
+support: "https://discord.gg/ae6wpKqApt"
+status: "https://status.botlist.site"

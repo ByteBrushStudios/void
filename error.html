@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.StatusCode}} - {{.ErrorTitle}}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.2/iconify-icon.min.js"></script>
+
+    <style>
+        :root {
+            --primary-purple: #8b5cf6;
+            --primary-blue: #3b82f6;
+            --primary-cyan: #06b6d4;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-glow: rgba(139, 92, 246, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+        }
+
+        .bg-animated::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, var(--primary-purple), var(--primary-cyan));
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 60%; left: 80%; animation-delay: 2s; }
+        .particle:nth-child(3) { top: 80%; left: 30%; animation-delay: 4s; }
+        .particle:nth-child(4) { top: 30%; left: 70%; animation-delay: 1s; }
+        .particle:nth-child(5) { top: 70%; left: 10%; animation-delay: 3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(10px) rotate(240deg); }
+        }
+
+        /* Enhanced glassmorphism */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(139, 92, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Modern buttons */
+        .btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        /* Typography */
+        .text-glow {
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .text-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* GitHub banner enhancement */
+        .github-banner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .github-banner:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .github-icon {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ef4444, #f97316);
+            animation: blink 2s infinite;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Improved animations */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Debug info styling */
+        .debug-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* Responsive design enhancements */
+        .header-section {
+            padding: 8vh 5vw;
+            padding-top: calc(8vh + 60px); /* Add extra padding for the GitHub banner */
+            text-align: center;
+        }
+
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 5vw;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        /* Fix for text overflow in debug cards */
+        .debug-card .flex {
+            flex-wrap: wrap;
+        }
+
+        .debug-card code, 
+        .debug-card .text-mono {
+            word-break: break-word;
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+
+        /* Error details need to not overflow */
+        .error-details {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            color: #f1f5f9;
+            margin-top: 1rem;
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .header-section {
+                padding: 6vh 3vw;
+                padding-top: calc(6vh + 60px);
+            }
+            
+            .content-section {
+                padding: 0 3vw;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .github-banner {
+                top: 10px;
+                right: 10px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            /* Fix horizontal overflow */
+            .debug-card {
+                padding: 1rem;
+            }
+
+            .debug-card .flex {
+                gap: 0.5rem;
+            }
+
+            .debug-card .flex span:first-child {
+                min-width: 85px;
+            }
+        }
+
+        /* Fix overflow in Service Details grid */
+        .grid.grid-cols-1 {
+            overflow-x: hidden;
+        }
+
+        .grid.grid-cols-1 .flex {
+            gap: 0.5rem;
+        }
+
+        /* Force elements to wrap */
+        .flex.items-center.justify-between {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 360px) {
+            /* Extreme small screens */
+            .flex.items-center.justify-between {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated background -->
+    <div class="bg-animated">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- GitHub Banner -->
+    <a href="https://github.com/ByteBrushStudios/void" class="github-banner fade-in">
+        <div class="flex items-center space-x-2">
+            <iconify-icon icon="mdi:github" class="github-icon text-xl text-white"></iconify-icon>
+            <span class="text-white font-medium">Open Source</span>
+        </div>
+    </a>
+
+    <!-- Header Section -->
+    <header class="header-section fade-in">
+        <div class="flex items-center justify-center mb-6">
+            <div class="status-indicator mr-3"></div>
+            <h1 class="text-4xl md:text-5xl font-bold text-glow">{{.ErrorTitle}}</h1>
+        </div>
+        <p class="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            {{.ErrorMessage}}
+        </p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content-section">
+        <!-- Action Buttons -->
+        <div class="action-buttons fade-in">
+            {{if .Redirect}}
+            <a href="{{.Redirect}}" class="btn btn-primary flex items-center justify-center py-4 rounded-xl text-white font-medium">
+                <iconify-icon icon="mdi:refresh" class="text-xl mr-2"></iconify-icon>
+                Retry Connection
+            </a>
+            {{end}}
+            <a href="https://{{.MatchedService.Domain}}" class="btn btn-secondary flex items-center justify-center py-4 rounded-xl text-white font-medium">
+                <iconify-icon icon="mdi:web" class="text-xl mr-2"></iconify-icon>
+                Visit Website
+            </a>
+            <a href="{{.MatchedService.Status}}" class="btn btn-secondary flex items-center justify-center py-4 rounded-xl text-white font-medium">
+                <iconify-icon icon="mdi:chart-line" class="text-xl mr-2"></iconify-icon>
+                Status Page
+            </a>
+            <a href="{{.MatchedService.Support}}" class="btn btn-secondary flex items-center justify-center py-4 rounded-xl text-white font-medium">
+                <iconify-icon icon="mdi:help-circle" class="text-xl mr-2"></iconify-icon>
+                Contact Support
+            </a>
+        </div>
+
+        <!-- Debug Toggle Button -->
+        <div class="text-center my-8 fade-in">
+            <button id="debugBtn" class="btn btn-secondary inline-flex items-center justify-center px-6 py-3 rounded-xl text-white font-medium">
+                <iconify-icon icon="mdi:code-braces" class="text-xl mr-2"></iconify-icon>
+                Debug Information
+            </button>
+        </div>
+
+        <!-- Debug Information -->
+        <div id="debugInfo" class="hidden slide-up mb-16">
+            <div class="separator"></div>
+            
+            <div class="info-grid">
+                <div class="debug-card glass">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <iconify-icon icon="mdi:server" class="text-purple-400 mr-2"></iconify-icon>
+                        Void Server Info
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Version:</span>
+                            <code class="text-mono text-cyan-400">{{.Info.Version}}</code>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Status:</span>
+                            <span id="versionStatus" class="text-mono">
+                                <iconify-icon icon="mdi:loading" class="animate-spin text-gray-400"></iconify-icon>
+                                Checking...
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Commit:</span>
+                            <code class="text-mono text-cyan-400">{{.Info.Commit}}</code>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Route:</span>
+                            <code class="text-mono text-cyan-400">[{{.Path}}@{{.Hostname}}]</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="debug-card glass">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <iconify-icon icon="mdi:account" class="text-purple-400 mr-2"></iconify-icon>
+                        Client Information
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">IP Address:</span>
+                            <code id="ipAddress" class="text-mono text-cyan-400">[Redacted]</code>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Location:</span>
+                            <code id="location" class="text-mono text-cyan-400">[Redacted]</code>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Browser:</span>
+                            <code id="browser" class="text-mono text-cyan-400">Loading...</code>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Version:</span>
+                            <code id="browserVersion" class="text-mono text-cyan-400">Loading...</code>
+                        </div>
+                    </div>
+                    
+                    <button id="unmaskBtn" class="btn btn-secondary w-full mt-4 py-2 rounded-lg text-white font-medium flex items-center justify-center">
+                        <iconify-icon icon="mdi:eye" class="text-lg mr-2"></iconify-icon>
+                        Reveal Information
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Card - Only in error.html -->
+            {{if .ErrorDetails}}
+            <div class="debug-card glass mt-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <iconify-icon icon="mdi:alert-circle" class="text-red-400 mr-2"></iconify-icon>
+                    Error Details ({{.StatusCode}})
+                </h3>
+                <div class="space-y-3 text-sm">
+                    {{if .ErrorSummary}}
+                    <div class="flex flex-col">
+                        <span class="text-gray-400 mb-1">Error Summary:</span>
+                        <code class="text-mono text-red-400 mb-2">{{.ErrorSummary}}</code>
+                    </div>
+                    {{end}}
+                    
+                    {{if .ErrorStack}}
+                    <div class="flex flex-col">
+                        <span class="text-gray-400 mb-1">Stack Trace:</span>
+                        <div class="error-details">{{.ErrorStack}}</div>
+                    </div>
+                    {{end}}
+                    
+                    {{if .ErrorDetails}}
+                    <div class="flex flex-col">
+                        <span class="text-gray-400 mb-1">Additional Details:</span>
+                        <div class="error-details">{{.ErrorDetails}}</div>
+                    </div>
+                    {{end}}
+                    
+                    {{if .ErrorTime}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Timestamp:</span>
+                        <code class="text-mono text-cyan-400">{{.ErrorTime}}</code>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+
+            <div class="debug-card glass mt-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <iconify-icon icon="mdi:information" class="text-purple-400 mr-2"></iconify-icon>
+                    Service Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400">Service Name:</span>
+                        <span class="text-mono text-cyan-400 text-right">{{.MatchedService.Name}}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400">Domain:</span>
+                        <span class="text-mono text-cyan-400 text-right">{{.MatchedService.Domain}}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400">Support:</span>
+                        <a href="{{.MatchedService.Support}}" class="text-mono text-cyan-400 hover:underline flex items-center text-right">
+                            <span>Available Here</span>
+                            <iconify-icon icon="mdi:open-in-new" class="ml-1 text-sm"></iconify-icon>
+                        </a>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400">Status Page:</span>
+                        <a href="{{.MatchedService.Status}}" class="text-mono text-cyan-400 hover:underline flex items-center text-right">
+                            <span>Check Status</span>
+                            <iconify-icon icon="mdi:open-in-new" class="ml-1 text-sm"></iconify-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="fixed bottom-0 left-0 right-0 text-center text-sm text-gray-500 py-4 backdrop-blur-sm">
+        <div class="flex items-center justify-center space-x-4">
+            <a href="https://github.com/ByteBrushStudios/void" class="hover:text-purple-400 transition-colors flex items-center">
+                <iconify-icon icon="mdi:server" class="mr-1"></iconify-icon>
+                Void Maintenance Server
+            </a>
+            <span class="text-gray-600">|</span>
+            <a href="https://discord.gg/Vv2bdC44Ge" class="hover:text-purple-400 transition-colors">
+                © 2025 ByteBrush Studios
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        // Get the debug info section
+        var debugInfo = document.getElementById("debugInfo");
+
+        // Get the button that toggles the debug info
+        var btn = document.getElementById("debugBtn");
+
+        // Get the button that unmasks the user info
+        var unmaskBtn = document.getElementById("unmaskBtn");
+
+        // Fetch update information when debug panel is opened
+        function checkForUpdates() {
+            fetch('/update-check')
+                .then(response => response.json())
+                .then(data => {
+                    const versionElement = document.getElementById('versionStatus');
+                    if (versionElement) {
+                        if (data.update_available) {
+                            versionElement.innerHTML = `
+                                <span class="text-yellow-400">Update Available</span>
+                                <a href="${data.release_page}" class="text-mono text-cyan-400 hover:underline ml-2" target="_blank">
+                                    <iconify-icon icon="mdi:arrow-up-circle" class="text-yellow-400"></iconify-icon>
+                                    ${data.latest_version}
+                                </a>`;
+                        } else {
+                            versionElement.innerHTML = `<span class="text-green-400">Up to Date</span>`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking for updates:', error);
+                    const versionElement = document.getElementById('versionStatus');
+                    if (versionElement) {
+                        versionElement.innerHTML = `<span class="text-gray-400">Unknown</span>`;
+                    }
+                });
+        }
+
+        // When the user clicks the button, toggle the debug info
+        btn.onclick = function() {
+            if (debugInfo.classList.contains("hidden")) {
+                debugInfo.classList.remove("hidden");
+                setTimeout(() => debugInfo.classList.add("slide-up"), 10);
+                btn.innerHTML = '<iconify-icon icon="mdi:close-circle" class="text-xl mr-2"></iconify-icon> Hide Debug Info';
+                
+                // Check for updates when debug panel is opened
+                checkForUpdates();
+            } else {
+                debugInfo.classList.add("hidden");
+                debugInfo.classList.remove("slide-up");
+                btn.innerHTML = '<iconify-icon icon="mdi:code-braces" class="text-xl mr-2"></iconify-icon> Debug Information';
+            }
+        }
+
+        // Fetch user's geographical information
+        fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ipAddress').dataset.ip = data.ip;
+                document.getElementById('location').dataset.location = `${data.city}, ${data.region}, ${data.country_name}`;
+            })
+            .catch(error => console.error('Error fetching geographical information:', error));
+
+        // Get user's browser information
+        var userAgent = navigator.userAgent;
+        var browserName, fullVersion;
+        var offset;
+
+        if ((offset = userAgent.indexOf("Chrome")) != -1) {
+            browserName = "Chrome";
+            fullVersion = userAgent.substring(offset + 7);
+        } else if ((offset = userAgent.indexOf("Firefox")) != -1) {
+            browserName = "Firefox";
+            fullVersion = userAgent.substring(offset + 8);
+        } else if ((offset = userAgent.indexOf("MSIE")) != -1) {
+            browserName = "Microsoft Internet Explorer";
+            fullVersion = userAgent.substring(offset + 5);
+        } else if ((offset = userAgent.indexOf("Safari")) != -1) {
+            browserName = "Safari";
+            fullVersion = userAgent.substring(offset + 7);
+            if ((offset = userAgent.indexOf("Version")) != -1) {
+                fullVersion = userAgent.substring(offset + 8);
+            }
+        } else if ((offset = userAgent.indexOf("Opera")) != -1) {
+            browserName = "Opera";
+            fullVersion = userAgent.substring(offset + 6);
+            if ((offset = userAgent.indexOf("Version")) != -1) {
+                fullVersion = userAgent.substring(offset + 8);
+            }
+        } else {
+            browserName = "Unknown";
+            fullVersion = "Unknown";
+        }
+
+        document.getElementById('browser').textContent = browserName;
+        document.getElementById('browserVersion').textContent = fullVersion.split(" ")[0];
+
+        // Enhanced unmask functionality with better UX
+        unmaskBtn.onclick = function() {
+            var ipAddress = document.getElementById('ipAddress');
+            var location = document.getElementById('location');
+            
+            if (ipAddress.textContent === '[Redacted]') {
+                unmaskBtn.classList.add('loading');
+                setTimeout(() => {
+                    ipAddress.textContent = ipAddress.dataset.ip || 'Unknown';
+                    location.textContent = location.dataset.location || 'Unknown';
+                    unmaskBtn.innerHTML = '<iconify-icon icon="mdi:eye-off" class="text-lg mr-2"></iconify-icon> Hide Information';
+                    unmaskBtn.classList.remove('loading');
+                }, 300);
+            } else {
+                ipAddress.textContent = '[Redacted]';
+                location.textContent = '[Redacted]';
+                unmaskBtn.innerHTML = '<iconify-icon icon="mdi:eye" class="text-lg mr-2"></iconify-icon> Reveal Information';
+            }
+        }
+    </script>
+</body>
+
+</html>

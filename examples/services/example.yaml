@@ -1,0 +1,22 @@
+# Void Maintenance Server - Service Configuration
+# This file defines the services that Void will reverse proxy to and provide maintenance pages for
+
+services:
+  # Main web application
+  - name: "My Web Application [Production]"
+    host: "http://127.0.0.1:3000"  # Backend server URL
+    domain: "example.com"          # Domain to match (supports root domains)
+    support: "https://discord.gg/support"  # Support/contact URL
+    status: "https://status.example.com"   # Status page URL
+
+  # API server
+  - name: "API Server [Production]"
+    host: "http://127.0.0.1:8080"
+    domain: "api.example.com"
+    support: "https://support.example.com"
+    status: "https://status.example.com"
+
+# API URLs - these domains will receive JSON responses instead of HTML maintenance pages
+apiUrls:
+  - "api.example.com"
+  - "webhooks.example.com"

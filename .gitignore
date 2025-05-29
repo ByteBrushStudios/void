@@ -1,0 +1,41 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build and cache
+/build/
+bin/
+dist/
+*.log
+logs/
+
+# Dependency directories
+vendor/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Configs/secrets
+.env
+.env.*
+services/*.yaml
+!services/infinitybots.yaml
+!services/default.yaml
+
+# Go coverage files
+*.coverprofile
+
+# Embedded assets (if generated)
+assets-gen.go
